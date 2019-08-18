@@ -14,6 +14,9 @@ Via Go tools:
 From the root directory:
 `./chatterbox`
 
+Changing the default port:
+`./chatterbox -port 8080`
+
 ## Usage
 Connecting with telnet:
 `telnet localhost 5050`

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"log"
 	"os"
 	"os/signal"
@@ -9,10 +10,13 @@ import (
 )
 
 func main() {
+	var flagPort = flag.String("port", "5050", "server port")
+	flag.Parse()
+
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, os.Interrupt)
 
-	chat, err := chatterbox.NewServer("5050")
+	chat, err := chatterbox.NewServer(*flagPort)
 	if err != nil {
 		log.Fatal(err)
 	}
