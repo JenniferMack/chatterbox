@@ -16,8 +16,8 @@ type chatroom struct {
 
 func (cr *chatroom) Connect(c net.Conn) {
 	client := &client{
-		write:        bufio.NewWriter(c),
-		roomMessages: cr.messages,
+		write: bufio.NewWriter(c),
+		recv:  cr.messages,
 	}
 
 	cr.mu.Lock()
@@ -28,7 +28,7 @@ func (cr *chatroom) Connect(c net.Conn) {
 
 func (cr *chatroom) Send(msg []byte) {
 	for _, client := range cr.clients {
-		client.roomMessages <- msg
+		client.recv <- msg
 	}
 }
 

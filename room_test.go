@@ -24,7 +24,7 @@ func TestRoomMsg(t *testing.T) {
 	t.Run("room msg", func(t *testing.T) {
 		want := "test message"
 		go func() { r.messages <- []byte(want) }()
-		got := <-r.clients[in].roomMessages
+		got := <-r.clients[in].recv
 
 		if string(got) != want {
 			t.Fatalf("got: %s; want: %s", got, want)
