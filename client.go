@@ -2,6 +2,9 @@ package chatterbox
 
 import (
 	"bufio"
+	"fmt"
+	"strings"
+	"time"
 )
 
 type client struct {
@@ -28,6 +31,9 @@ func (c *client) monitor() {
 		if err != nil {
 			return
 		}
-		c.send <- []byte("> " + data)
+		data = strings.TrimSpace(data)
+		msg := fmt.Sprintf("<%s|%s> %s\n",
+			time.Now().UTC().Format("15:04"), c.name, data)
+		c.send <- []byte(msg)
 	}
 }
