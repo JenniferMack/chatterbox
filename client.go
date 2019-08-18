@@ -5,6 +5,7 @@ import (
 )
 
 type client struct {
+	name  string
 	write *bufio.Writer
 	read  *bufio.Reader
 	send  chan []byte
