@@ -33,7 +33,7 @@ func TestRoomMsg(t *testing.T) {
 
 	t.Run("output msg", func(t *testing.T) {
 		want := "output test\r"
-		go func() { r.messages <- []byte(want) }()
+		go r.Send([]byte(want))
 
 		buf := bufio.NewReader(out)
 		got, err := buf.ReadString('\r')

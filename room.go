@@ -26,6 +26,12 @@ func (cr *chatroom) Connect(c net.Conn) {
 	go client.relay()
 }
 
+func (cr *chatroom) Send(msg []byte) {
+	for _, client := range cr.clients {
+		client.roomMessages <- msg
+	}
+}
+
 func NewRoom(name string) *chatroom {
 	room := &chatroom{
 		name:     name,
