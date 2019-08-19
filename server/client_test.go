@@ -13,19 +13,15 @@ func TestWrite(t *testing.T) {
 	defer out.Close()
 
 	cl := client{
-		write: bufio.NewWriter(out),
-		recv:  make(chan []byte),
+		writer: bufio.NewWriter(out),
 	}
 
-	go cl.relay()
-	defer close(cl.recv)
+	go cl.writeToConn(message{name: "tester"})
 
-	want := "test message\n"
-	cl.recv <- []byte(want)
 	recv := bufio.NewReader(in)
 	got, _ := recv.ReadString('\n')
 
-	if got != want {
+	if !strings.Contains(got, "|tester>") {
 		t.Fatal(got)
 	}
 }
@@ -36,17 +32,17 @@ func TestRead(t *testing.T) {
 	defer out.Close()
 
 	cl := client{
-		name: makeName(1),
-		read: bufio.NewReader(out),
-		send: make(chan []byte),
+		name:   makeName(),
+		reader: bufio.NewReader(out),
 	}
-	go cl.monitor()
+	ch := make(chan message)
+	go cl.readFromConn(ch)
 
 	msg := "test\n"
 	in.Write([]byte(msg))
 
-	got := string(<-cl.send)
-	if !strings.Contains(got, "golf_mike> test") {
-		t.Fatal(got)
+	got := <-ch
+	if !strings.Contains(got.String(), "> test") {
+		t.Fatal(got.String())
 	}
 }
