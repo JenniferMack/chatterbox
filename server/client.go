@@ -2,40 +2,65 @@ package chatterbox
 
 import (
 	"bufio"
-	"fmt"
+	"math/rand"
+	"net"
 	"strings"
 	"time"
 )
 
 type client struct {
-	name  string
-	write *bufio.Writer
-	read  *bufio.Reader
-	send  chan []byte
-	recv  chan []byte
+	name   string
+	room   string
+	writer *bufio.Writer
+	reader *bufio.Reader
 }
 
-func (c *client) relay() {
-	for byt := range c.recv {
-		_, err := c.write.Write(byt)
-		if err != nil {
-			return
-		}
-		c.write.Flush()
+func (c *client) writeToConn(msg message) error {
+	_, err := c.writer.WriteString(msg.String())
+	if err != nil {
+		return err
 	}
+	return c.writer.Flush()
 }
 
-func (c *client) monitor(fn func(*client)) {
-	defer fn(c)
-
+func (c *client) readFromConn(send chan message) {
 	for {
-		data, err := c.read.ReadString('\n')
+		data, err := c.reader.ReadString('\n')
 		if err != nil {
-			return
+			break
 		}
-		data = strings.TrimSpace(data)
-		msg := fmt.Sprintf("<%s|%s> %s\n",
-			time.Now().UTC().Format("15:04"), c.name, data)
-		c.send <- []byte(msg)
+
+		msg := message{
+			from: c,
+			name: c.name,
+			room: c.room,
+			text: strings.TrimSpace(data),
+		}
+		send <- msg
 	}
+}
+
+func newClient(conn net.Conn) *client {
+	c := &client{
+		name:   makeName(),
+		reader: bufio.NewReader(conn),
+		writer: bufio.NewWriter(conn),
+	}
+
+	return c
+}
+
+func makeName() string {
+	fn := []string{
+		"alpha", "bravo", "charlie", "delta", "echo", "foxtrot", "golf",
+		"hotel", "india", "juliet", "kilo", "lima", "mike", "november",
+		"oscar", "papa", "quebec", "romeo", "sierra", "tango", "uniform",
+		"victor", "whiskey", "xray", "yankee", "zulu",
+	}
+	seed := time.Now().UnixNano()
+	rn := rand.New(rand.NewSource(seed))
+
+	p1 := rn.Intn(len(fn) - 1)
+	p2 := rn.Intn(len(fn) - 1)
+	return fn[p1] + "_" + fn[p2]
 }

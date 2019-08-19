@@ -22,10 +22,7 @@ func main() {
 	}
 	defer chat.Close()
 
-	room := chatterbox.NewRoom("Lobby")
-	defer room.Close()
-	go room.Accept(chat)
-
+	go chat.Collect("Lobby")
 	<-quit
 	println()
 	log.Print("shutting down")
