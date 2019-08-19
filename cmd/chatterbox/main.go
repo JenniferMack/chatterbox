@@ -6,7 +6,7 @@ import (
 	"os"
 	"os/signal"
 
-	"github.com/JenniferMack/chatterbox"
+	chatterbox "github.com/JenniferMack/chatterbox/server"
 )
 
 func main() {
