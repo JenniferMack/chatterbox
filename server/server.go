@@ -50,6 +50,7 @@ func (s *chatServer) monitor() {
 			case "/close":
 				s.connections[msg.from].Close()
 				s.drop(msg.from)
+				msg.text = "has left the server"
 
 			case "/room":
 				if len(f) != 2 {
