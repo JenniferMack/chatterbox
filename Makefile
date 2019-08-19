@@ -1,6 +1,6 @@
 bin      := chatterbox
 bindir   := cmd/$(bin)
-files    :=  *.go $(bindir)/*.go
+files    :=  server/*.go $(bindir)/*.go
 
 $(bin) : $(files)
 	go build ./$(bindir)/...
