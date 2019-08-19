@@ -21,6 +21,12 @@ Changing the default port:
 Connecting with telnet:
 `telnet localhost 5050`
 
+Closing the chat:
+`/close`
+
+Changing the room:
+`/room <name>`
+
 ## Docker
 The makefile can build, run and stop a chatterbox docker container.
 
