@@ -3,6 +3,7 @@ package chatterbox
 import (
 	"bufio"
 	"net"
+	"strings"
 	"testing"
 )
 
@@ -10,7 +11,7 @@ func TestNewRoom(t *testing.T) {
 	r := NewRoom("lobby")
 	_, conn := net.Pipe()
 
-	r.Connect(conn)
+	r.connect(conn, 1)
 	if l := len(r.clients); l != 1 {
 		t.Fatal(l)
 	}
@@ -19,7 +20,7 @@ func TestNewRoom(t *testing.T) {
 func TestRoomMsg(t *testing.T) {
 	r := NewRoom("lobby")
 	in, out := net.Pipe()
-	r.Connect(in)
+	r.connect(in, 1)
 
 	t.Run("room msg", func(t *testing.T) {
 		want := "test message"
@@ -33,7 +34,7 @@ func TestRoomMsg(t *testing.T) {
 
 	t.Run("output msg", func(t *testing.T) {
 		want := "output test\r"
-		go r.Send([]byte(want))
+		go r.send([]byte(want))
 
 		buf := bufio.NewReader(out)
 		got, err := buf.ReadString('\r')
@@ -41,7 +42,7 @@ func TestRoomMsg(t *testing.T) {
 			t.Fatal(err)
 		}
 
-		if got != want {
+		if !strings.Contains(got, "output test") {
 			t.Fatalf("got: %s; want: %s", got, want)
 		}
 	})

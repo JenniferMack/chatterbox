@@ -3,6 +3,7 @@ package chatterbox
 import (
 	"bufio"
 	"net"
+	"strings"
 	"testing"
 )
 
@@ -35,6 +36,7 @@ func TestRead(t *testing.T) {
 	defer out.Close()
 
 	cl := client{
+		name: makeName(1),
 		read: bufio.NewReader(out),
 		send: make(chan []byte),
 	}
@@ -43,9 +45,8 @@ func TestRead(t *testing.T) {
 	msg := "test\n"
 	in.Write([]byte(msg))
 
-	want := "> " + msg
 	got := string(<-cl.send)
-	if got != want {
+	if !strings.Contains(got, "golf_mike> test") {
 		t.Fatal(got)
 	}
 }

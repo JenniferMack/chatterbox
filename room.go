@@ -16,27 +16,30 @@ type chatroom struct {
 	messages chan []byte
 }
 
+// Close ends client connections and closes channels.
 func (cr *chatroom) Close() {
-	cr.Send([]byte("server closing\n"))
+	cr.send([]byte("server closing\n"))
 	time.Sleep(100 * time.Millisecond)
 
 	for conn, client := range cr.clients {
 		close(client.recv)
 		conn.Close()
 	}
+	close(cr.messages)
 }
 
+// Accept monitors the server and accepts incoming connections.
 func (cr *chatroom) Accept(ln net.Listener) {
 	for {
 		conn, err := ln.Accept()
 		if err != nil {
 			return
 		}
-		cr.Connect(conn, time.Now().UnixNano())
+		cr.connect(conn, time.Now().UnixNano())
 	}
 }
 
-func (cr *chatroom) Connect(c net.Conn, seed int64) {
+func (cr *chatroom) connect(c net.Conn, seed int64) {
 	client := &client{
 		name:  makeName(seed),
 		write: bufio.NewWriter(c),
@@ -51,10 +54,10 @@ func (cr *chatroom) Connect(c net.Conn, seed int64) {
 	go client.relay()
 	go client.monitor()
 
-	cr.Send([]byte("#> " + client.name + " has entered " + cr.name + "\n"))
+	cr.send([]byte("#> " + client.name + " has entered " + cr.name + "\n"))
 }
 
-func (cr *chatroom) Send(msg []byte) {
+func (cr *chatroom) send(msg []byte) {
 	for _, client := range cr.clients {
 		client.recv <- msg
 	}
@@ -62,10 +65,11 @@ func (cr *chatroom) Send(msg []byte) {
 
 func (cr *chatroom) listen() {
 	for byt := range cr.messages {
-		cr.Send(byt)
+		cr.send(byt)
 	}
 }
 
+// NewRoom creats a chatroom and starts a listening thread.
 func NewRoom(name string) *chatroom {
 	room := &chatroom{
 		name:     name,
