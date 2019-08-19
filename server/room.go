@@ -10,7 +10,7 @@ import (
 
 type chatroom struct {
 	mu      sync.Mutex
-	clients map[net.Conn]*client
+	clients map[*client]net.Conn
 
 	name     string
 	messages chan []byte
@@ -21,7 +21,7 @@ func (cr *chatroom) Close() {
 	cr.send([]byte("server closing\n"))
 	time.Sleep(100 * time.Millisecond)
 
-	for conn, client := range cr.clients {
+	for client, conn := range cr.clients {
 		close(client.recv)
 		conn.Close()
 	}
@@ -49,16 +49,16 @@ func (cr *chatroom) connect(c net.Conn, seed int64) {
 	}
 
 	cr.mu.Lock()
-	cr.clients[c] = client
+	cr.clients[client] = c
 	cr.mu.Unlock()
 	go client.relay()
-	go client.monitor()
+	go client.monitor(cr.drop)
 
 	cr.send([]byte("#> " + client.name + " has entered " + cr.name + "\n"))
 }
 
 func (cr *chatroom) send(msg []byte) {
-	for _, client := range cr.clients {
+	for client := range cr.clients {
 		client.recv <- msg
 	}
 }
@@ -74,7 +74,7 @@ func NewRoom(name string) *chatroom {
 	room := &chatroom{
 		name:     name,
 		messages: make(chan []byte),
-		clients:  make(map[net.Conn]*client),
+		clients:  make(map[*client]net.Conn),
 	}
 	go room.listen()
 
