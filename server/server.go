@@ -31,6 +31,7 @@ func (s *chatServer) Collect(room string) {
 		s.mu.Unlock()
 
 		go cl.readFromConn(s.messages)
+		cl.writeToConn(message{name: "admin", text: "Welcome, your handle is: " + cl.name})
 	}
 }
 
