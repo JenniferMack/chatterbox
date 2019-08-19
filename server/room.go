@@ -57,6 +57,13 @@ func (cr *chatroom) connect(c net.Conn, seed int64) {
 	cr.send([]byte("#> " + client.name + " has entered " + cr.name + "\n"))
 }
 
+func (cr *chatroom) drop(cl *client) {
+	cr.mu.Lock()
+	cr.clients[cl].Close()
+	delete(cr.clients, cl)
+	cr.mu.Unlock()
+}
+
 func (cr *chatroom) send(msg []byte) {
 	for client := range cr.clients {
 		client.recv <- msg

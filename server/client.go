@@ -25,7 +25,9 @@ func (c *client) relay() {
 	}
 }
 
-func (c *client) monitor() {
+func (c *client) monitor(fn func(*client)) {
+	defer fn(c)
+
 	for {
 		data, err := c.read.ReadString('\n')
 		if err != nil {
